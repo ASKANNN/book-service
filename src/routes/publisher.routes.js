@@ -3,6 +3,6 @@ import {findPublishersByAuthor} from "../controllers/publisher.controller.js";
 
 const router = express.Router();
 
-router.get('publishers/author/:author', findPublishersByAuthor);
+router.get('/publishers/author/:author', findPublishersByAuthor);
 
 export default router;

@@ -34,7 +34,7 @@ export const findBookAuthors = async (req, res) => {
 }
 
 export const removeAuthor = async (req, res) => {
-    const t = await sequelize.transaction({readOnly: true});
+    const t = await sequelize.transaction();
     try {
         const author = await Author.findByPk(req.params.author, {
             attributes: {

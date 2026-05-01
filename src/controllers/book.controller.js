@@ -2,7 +2,7 @@ import {Author, Book, Publisher} from "../model/index.js";
 import {sequelize} from "../config/database.js";
 
 export const addBook = async (req, res) => {
-    const t = await sequelize.transaction({readOnly: true});
+    const t = await sequelize.transaction();
     try {
         const {isbn, title, authors, publisher} = req.body;
         const existingBook = await Book.findByPk(isbn, {transaction: t});
@@ -65,7 +65,7 @@ export const findBookByIsbn = async (req, res) => {
 }
 
 export const removeBook = async (req, res) => {
-    const t = await sequelize.transaction({readOnly: true});
+    const t = await sequelize.transaction();
     try {
         const book = await Book.findByPk(req.params.isbn,
             {
@@ -102,13 +102,118 @@ export const removeBook = async (req, res) => {
     }
 }
 export const updateBookTitle = async (req, res) => {
-    // TODO
+    const t = await sequelize.transaction();
+    try {
+        const book = await Book.findByPk(req.params.isbn, {
+            include: [
+                {
+                    model: Author,
+                    as: 'authors',
+                    attributes: {
+                        include: ['name', [sequelize.col('birth_date'), 'birthDate']],
+                        exclude: ['birth_date']
+                    },
+                    through: {
+                        attributes: []
+                    }
+                }
+            ],
+            transaction: t
+        });
+        if (!book) {
+            await t.rollback();
+            return res.status(404).send({error: `Book with ISBN ${req.params.isbn} not found`});
+        }
+
+        book.title = req.params.title;
+        await book.save({transaction: t});
+        await t.commit();
+        return res.json(book);
+    } catch (e) {
+        await t.rollback();
+        console.log('Error updating book title', e);
+        return res.status(500).send({
+            error: e.message,
+            message: 'Failed to update book title'
+        });
+    }
 }
 
 export const findBooksByAuthor = async (req, res) => {
-    // TODO
+    try {
+        const author = await Author.findByPk(req.params.author, {
+            include: [
+                {
+                    model: Book,
+                    as: 'books',
+                    include: [
+                        {
+                            model: Author,
+                            as: 'authors',
+                            attributes: {
+                                include: ['name', [sequelize.col('birth_date'), 'birthDate']],
+                                exclude: ['birth_date']
+                            },
+                            through: {
+                                attributes: []
+                            }
+                        }
+                    ],
+                    through: {
+                        attributes: []
+                    }
+                }
+            ]
+        });
+
+        if (!author) {
+            return res.status(404).send({error: `Author ${req.params.author} not found`});
+        }
+
+        return res.json(author.books);
+    } catch (e) {
+        console.log('Error finding books by author', e);
+        return res.status(500).send({
+            error: e.message,
+            message: 'Failed to find books by author'
+        });
+    }
 }
 
 export const findBooksByPublisher = async (req, res) => {
-    // TODO
+    try {
+        const publisher = await Publisher.findByPk(req.params.publisher, {
+            include: [
+                {
+                    model: Book,
+                    as: 'books',
+                    include: [
+                        {
+                            model: Author,
+                            as: 'authors',
+                            attributes: {
+                                include: ['name', [sequelize.col('birth_date'), 'birthDate']],
+                                exclude: ['birth_date']
+                            },
+                            through: {
+                                attributes: []
+                            }
+                        }
+                    ]
+                }
+            ]
+        });
+
+        if (!publisher) {
+            return res.status(404).send({error: `Publisher ${req.params.publisher} not found`});
+        }
+
+        return res.json(publisher.books);
+    } catch (e) {
+        console.log('Error finding books by publisher', e);
+        return res.status(500).send({
+            error: e.message,
+            message: 'Failed to find books by publisher'
+        });
+    }
 }

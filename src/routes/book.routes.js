@@ -11,8 +11,8 @@ const router = express.Router();
 
 router.post('/book', addBook);
 router.get('/book/:isbn', findBookByIsbn);
-router.delete('/book/:isbn', removeBook);
+router.delete('/book/:name', removeBook);
 router.patch('/book/:isbn/title/:title', updateBookTitle);
-router.get('/books/author/:author', findBooksByAuthor);
-router.get('/books/publisher/:publisher', findBooksByPublisher);
+router.get('/books/author/:name', findBooksByAuthor);
+router.get('/books/publisher/:name', findBooksByPublisher);
 export default router;

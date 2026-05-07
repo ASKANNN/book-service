@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 import {Sequelize} from 'sequelize';
 
-dotenv.config({ override: true });
+dotenv.config();
 
 // Create new Sequelize instance
 

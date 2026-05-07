@@ -62,3 +62,5 @@ const syncModels = async () => {
     }
 }
 export {syncModels, Book, Publisher, Author};
+
+// Bidirectional association - в базах данных/ORM: Это связь, при которой внешний ключ находится в таблице А и ссылается на таблицу B. То есть, запись A "смотрит" или направлена в сторону B.

@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 import {Sequelize} from 'sequelize';
 
-dotenv.config();
+dotenv.config({ override: true });
 
 // Create new Sequelize instance
 
@@ -12,8 +12,16 @@ const sequelize = new Sequelize(
     process.env.DB_PASSWORD || '',
     {
         host: process.env.DB_HOST || 'localhost',
-        port: process.env.DB_PORT || 3306,
-        dialect: process.env.DB_DIALECT || 'mysql',
+        port: process.env.DB_PORT || 5432,
+        dialect: process.env.DB_DIALECT || 'postgres',
+        dialectOptions: process.env.DB_DIALECT === 'postgres' && process.env.DB_SSL === 'true'
+            ? {
+                ssl: {
+                    require: true,
+                    rejectUnauthorized: false,
+                }
+            }
+            : {},
         logging: false,
         define: {
             timestamps: false,
